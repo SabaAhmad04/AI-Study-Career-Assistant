@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare, LayoutDashboard, Sparkles, FileText,
-  Compass, LogOut, History, GraduationCap, X, User 
+  Compass, LogOut, History, GraduationCap, X, User, Mic
 } from 'lucide-react';
 
 // Components
@@ -13,6 +13,7 @@ import DoubtSolver from '../components/DoubtSolver';
 import HistorySidebar from '../components/HistorySidebar';
 import CareerRoadmap from '../components/CareerRoadmap';
 import ResumeAnalyzer from '../components/ResumeAnalyzer';
+import Interview from './Interview';
 
 const TABS = [
   { id: 'summarizer', label: 'Summarizer', icon: FileText, accent: '#2563EB', bg: 'linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)', desc: 'Condense any topic into sharp, clear notes.', emoji: '📝' },
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'doubt', label: 'Doubt Solver', icon: MessageSquare, accent: '#059669', bg: 'linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%)', desc: 'Ask anything — get instant clarity.', emoji: '💬' },
   { id: 'roadmap', label: 'Career Roadmap', icon: Compass, accent: '#0F172A', bg: 'linear-gradient(135deg,#F8FAFC 0%,#E2E8F0 100%)', desc: 'Map your professional future step by step.', emoji: '🧭' },
   { id: 'resume', label: 'Resume Analysis', icon: FileText, accent: '#DC2626', bg: 'linear-gradient(135deg,#FFF7F7 0%,#FEE2E2 100%)', desc: 'Spot gaps and sharpen your resume.', emoji: '📄' },
+  { id: 'interview', label: 'AI Mock Interview', icon: Mic, accent: '#0EA5E9', bg: 'linear-gradient(135deg,#F0F9FF 0%,#E0F2FE 100%)', desc: 'Practice with AI-powered mock interviews.', emoji: '🎤' },
 ];
 
 export default function Dashboard() {
@@ -193,6 +195,7 @@ export default function Dashboard() {
                       {activeTab === 'doubt' && <DoubtSolver context={sharedText} />}
                       {activeTab === 'roadmap' && <CareerRoadmap text={sharedText} setRoadmapData={setCurrentRoadmap} />}
                       {activeTab === 'resume' && <ResumeAnalyzer roadmapData={currentRoadmap} />}
+                      {activeTab === 'interview' && <Interview />}
                     </div>
                   </>
                 )}

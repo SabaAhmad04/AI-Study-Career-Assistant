@@ -8,6 +8,7 @@ import API from '../services/api';// Adjust the path to wherever you saved api.j
 const Signup = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -28,7 +29,7 @@ const Signup = () => {
       });
       
       toast.success("Account created! Please log in.");
-      navigate('/'); // Redirect to Login page
+      navigate('/login'); // Redirect to Login page
     } catch (err) {
       toast.error(err.response?.data?.msg || 'Signup failed. Try a different email.');
     } finally {
@@ -113,16 +114,39 @@ const Signup = () => {
 
             {/* Confirm Password Input */}
             <div className="space-y-1">
-              <label className="text-sm font-bold text-slate-700 ml-1">Confirm</label>
+              <label className="text-sm font-bold text-slate-700 ml-1">Confirm Password</label>
+
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={18}
+                />
+
                 <input
-                  type="password" required
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all text-sm font-medium"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all text-sm font-medium"
                   placeholder="••••••••"
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
               </div>
             </div>
 

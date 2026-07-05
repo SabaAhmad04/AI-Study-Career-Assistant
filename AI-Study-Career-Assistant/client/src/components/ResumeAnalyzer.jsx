@@ -12,57 +12,147 @@ export default function ResumeAnalyzer({ roadmapData }) {
     jobDescription: ""
   });
   const [file, setFile] = useState(null);
+  const [resumeText, setResumeText] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+
+  const [generalAnalysis, setGeneralAnalysis] = useState(null);
+  const [roadmapAnalysis, setRoadmapAnalysis] = useState(null);
+  const [jdAnalysis, setJdAnalysis] = useState(null);
 
   const hasRoadmap = roadmapData && roadmapData.length > 0;
-  
-  useEffect(() => {
-    if (hasRoadmap) {
-      setMode("roadmap");
-      setAnalysis(null); 
-    }
-  }, [roadmapData, hasRoadmap]);
+  const currentAnalysis =
+  mode === "general"
+    ? generalAnalysis
+    : mode === "roadmap"
+    ? roadmapAnalysis
+    : jdAnalysis;
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🟢 NEW: Clean Reset Function
   const handleReset = () => {
-    setAnalysis(null);
-    setFile(null);
-    setFormData({
-      candidateName: "",
-      targetJob: "",
-      yearsExperience: "",
-      jobDescription: ""
-    });
-  };
+  setFile(null);
+  setResumeText("");
 
-  const handleAnalyze = async () => {
-    if (!file) return alert("Please upload your Resume PDF first.");
-    
-    setLoading(true);
-    const data = new FormData();
-    data.append('file', file);
+  setGeneralAnalysis(null);
+  setRoadmapAnalysis(null);
+  setJdAnalysis(null);
+
+  setFormData({
+    candidateName: "",
+    targetJob: "",
+    yearsExperience: "",
+    jobDescription: ""
+  });
+
+  setMode("general");
+};
+    const handleFileChange = async (e) => {
+
+    const uploaded = e.target.files[0];
+
+    if (!uploaded) return;
+
+    setFile(uploaded);
+
+    setMode("general");
+    // New Resume -> clear old analyses
+
+    setGeneralAnalysis(null);
+    setRoadmapAnalysis(null);
+    setJdAnalysis(null);
+
+    const form = new FormData();
+
+    form.append("file", uploaded);
 
     try {
-      const textRes = await API.post('/api/upload-pdf', data);
-      
-      const res = await API.post('/api/analyze-resume', {
+
+      setLoading(true);
+
+      const res = await API.post("/api/upload-pdf", form);
+
+      console.log("Upload response:", res.data);
+      const extractedText = res.data.text || res.data.data?.text || "";
+      setResumeText(extractedText);
+      console.log("Saving resumeText:", extractedText);
+      localStorage.setItem("resumeText", extractedText);
+
+    } catch (err) {
+
+      alert("Unable to read PDF");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+    const handleAnalyze = async () => {
+
+    if (!resumeText) {
+      alert("Please upload your Resume PDF first.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+
+      const res = await API.post("/api/analyze-resume", {
         ...formData,
-        resumeText: textRes.data.text,
-        roadmapData: mode === "roadmap" ? roadmapData : null,
-        jobDescription: mode === "jd" ? formData.jobDescription : null
+
+        resumeText,
+
+        roadmapData:
+          mode === "roadmap"
+            ? roadmapData
+            : null,
+
+        jobDescription:
+          mode === "jd"
+            ? formData.jobDescription
+            : null
       });
 
-      setAnalysis(res.data.data);
+      if (!res.data.success) {
+        throw new Error("Analysis failed");
+      }
+
+      if (mode === "general") {
+
+        setGeneralAnalysis(res.data.data);
+
+      }
+
+      else if (mode === "roadmap") {
+
+        setRoadmapAnalysis(res.data.data);
+
+      }
+
+      else {
+
+        setJdAnalysis(res.data.data);
+
+      }
+
     } catch (err) {
-      alert("Analysis failed. Ensure server is running.");
+
+      console.error(err);
+
+      alert("Analysis failed.");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   return (
@@ -102,9 +192,10 @@ export default function ResumeAnalyzer({ roadmapData }) {
             <button 
               key={m}
               onClick={() => {
-                  if (m === 'roadmap' && !hasRoadmap) return alert("Generate a roadmap first!");
+                  if (m === "roadmap" && !hasRoadmap)
+                      return alert("Generate a roadmap first!");
+
                   setMode(m);
-                  setAnalysis(null);
               }}
               className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all capitalize ${
                   mode === m 
@@ -118,8 +209,7 @@ export default function ResumeAnalyzer({ roadmapData }) {
         </div>
       </div>
 
-      {!analysis ? (
-        <div className="max-w-2xl mx-auto space-y-8 relative z-10">
+       <div className="max-w-2xl mx-auto space-y-8 relative z-10">
           
           <AnimatePresence mode="wait">
             {mode === "jd" ? (
@@ -167,7 +257,11 @@ export default function ResumeAnalyzer({ roadmapData }) {
           <div className={`relative border-2 border-dashed rounded-[2.5rem] p-12 flex flex-col items-center transition-all group ${
               file ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200 hover:bg-blue-50 hover:border-blue-300'
           }`}>
-            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setFile(e.target.files[0])} />
+            <input
+              type="file"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleFileChange}
+              />
             <Upload className={`mb-4 transition-transform group-hover:scale-110 ${file ? 'text-emerald-500' : 'text-slate-400'}`} size={48} />
             <p className="text-slate-700 font-black">{file ? file.name : "Drop your Resume PDF here"}</p>
             <p className="text-slate-400 text-[10px] font-bold uppercase mt-1 tracking-widest">Maximum File Size: 10MB</p>
@@ -185,9 +279,7 @@ export default function ResumeAnalyzer({ roadmapData }) {
             {loading ? "AI is Scanning Resume..." : "Run AI Analysis"}
           </button>
         </div>
-      ) : (
-        <ResultsDisplay analysis={analysis} onReset={handleReset} />
-      )}
+        {currentAnalysis  && <ResultsDisplay analysis={currentAnalysis} onReset={handleReset} />}
     </div>
   );
 }
@@ -230,7 +322,7 @@ function ResultsDisplay({ analysis, onReset }) {
             onClick={onReset} 
             className="flex items-center justify-center gap-2 w-full mt-4 py-4 bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-700 transition-all shadow-lg"
         >
-          <RotateCcw size={14} /> Analyze Another Resume
+          <RotateCcw size={14} /> Upload New Resume
         </button>
       </div>
     </motion.div>

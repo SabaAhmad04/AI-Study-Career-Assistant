@@ -84,7 +84,10 @@ export default function Summarizer({ onTextChange, initialData, onSaveSuccess })
     setIsSaved(false);
     try {
       const { data } = await summarizeNotes(text);
-      setSummary(data.data); 
+      const result = await summarizeNotes(text);
+
+      setSummary(result.data);
+      
       toast.success("AI Summary Generated!"); // 🚀 Success toast
     } catch (err) {
       console.error(err);

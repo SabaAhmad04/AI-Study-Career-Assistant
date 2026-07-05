@@ -4,6 +4,8 @@ import { Toaster } from 'react-hot-toast'; // 🟢 1. Import Toaster
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Home from "./pages/Home";
+import Interview from "./pages/Interview";
 
 export default function App() {
   return (
@@ -44,9 +46,14 @@ export default function App() {
         />
 
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home/>}/>
+        <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/interview"
+          element={<Interview/>}
+          />
       </Routes>
     </Router>
   );

@@ -14,7 +14,7 @@ export default function CareerRoadmap({ text, setRoadmapData }) {
     setError("");
   }, [text]);
 
-  const generateRoadmap = async () => {
+const generateRoadmap = async () => {
   if (!text || text.length < 50) {
     alert("Please provide more detailed notes first!");
     return;
@@ -22,18 +22,19 @@ export default function CareerRoadmap({ text, setRoadmapData }) {
 
   setLoading(true);
   setError("");
+
   try {
-    const response = await API.post("/api/login", data);
-    
-    // 🔍 Check if the response actually has data
-    if (response.data && response.data.success) {
+    const response = await API.post("/api/career-roadmap", {
+      text,
+    });
+
+    if (response.data.success) {
       const roadmapData = response.data.data;
-      
-      setRoadmap(roadmapData); // Local state for the timeline
-      
-      // 🟢 IMPORTANT: This sends the data to Dashboard.jsx
-      if (typeof setRoadmapData === 'function') {
-        setRoadmapData(roadmapData); 
+
+      setRoadmap(roadmapData);
+
+      if (typeof setRoadmapData === "function") {
+        setRoadmapData(roadmapData);
       }
     } else {
       setError("AI returned an empty response. Try again.");

@@ -7,13 +7,20 @@ const pdf = require('pdf-parse'); // ✅ New: For reading PDF text
 const AIService = require('./services/ai.service');
 const Study = require('./models/Study');
 const authRoutes = require('./routes/auth');
+const interviewRoutes = require("./routes/interview");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/study', require('./routes/study'));
+app.use("/api/interview", interviewRoutes);
 // Configure Multer for memory storage (faster for small/medium PDFs)
 const upload = multer({ limits: { fileSize: 50 * 1024 * 1024 } });
 
@@ -66,6 +73,11 @@ app.post('/api/summarize', async (req, res) => {
 app.post('/api/save-study', async (req, res) => {
   try {
     const { userId, title, summary, originalText } = req.body;
+
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ success: false, error: "Invalid or missing user ID" });
+    }
+
     const newSession = new Study({
       user: userId,
       title,
